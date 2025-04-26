@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { fetchProducts } from "../utils/fetchProducts.js"
-
+import CardComponent from "../components/CardComponent.jsx"
 const HomePage = () => {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -27,15 +27,23 @@ const HomePage = () => {
   console.log(products)
 
   return (
-    <div>
-      <h1 className="text-center">App</h1>
-      <ul>
-        {products.map((product,index) => (
-          <li key={index}>{product.name}</li>
-        ))}
-      </ul>
-    </div>
+<section className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+  {products.map((product) => (
+    <CardComponent
+      key={product._id || product.id}
+      title={product.name || product.productName}
+      description={product.description || product.productDescription}
+      price={product.price}
+      imageUrl={
+        typeof product.imageUrl === "string"
+          ? product.imageUrl
+          : "https://placehold.co/300x200"
+      }
+    />
+  ))}
+</section>
   )
+
 }
 
 export default HomePage
