@@ -7,6 +7,7 @@ import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import SignUpPage from "./pages/SignUpPage";
 import ProductDetails from "./pages/ProductDetails";
+import Cart from "./pages/Cart"; // (not CartPage)
 
 
 //Components
@@ -25,6 +26,7 @@ const App = () => {
           className="container d-flex flex-column justify-content-center align-items-center"
         >
           <Routes>
+            <Route path="/cart" element={<Cart />} />
             <Route path="/"element={<PrivateRoute><HomePage /></PrivateRoute>}/>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LogInPage />} />

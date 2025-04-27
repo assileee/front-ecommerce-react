@@ -3,9 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const NavBar = () => {
   const token = localStorage.getItem("token");
-  const avatar = localStorage.getItem("avatar"); // Fetch avatar from localStorage
+  const avatar = localStorage.getItem("avatar");
   const location = useLocation();
   const navigate = useNavigate();
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const hideNav =
     location.pathname === "/login" ||
@@ -27,9 +29,22 @@ const NavBar = () => {
           </Link>
         )}
         <div className="col-md-3 text-end d-flex align-items-center justify-content-end gap-2">
+          {/* CART ICON (only when logged in) */}
+          {token && (
+            <Link to="/cart" className="btn btn-light position-relative me-2" title="View Cart">
+              <i className="bi bi-cart3" style={{ fontSize: 28 }}></i>
+              {cartQuantity > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {cartQuantity}
+                  <span className="visually-hidden">cart items</span>
+                </span>
+              )}
+            </Link>
+          )}
+
           {/* Show avatar if logged in and avatar exists */}
           {token && avatar && avatar !== "" && (
-              <img
+            <img
               src={`http://localhost:3000/${avatar.replace(/\\/g, "/")}`}
               alt="avatar"
               style={{
