@@ -1,24 +1,66 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+
 const NavBar = () => {
-    return (
-      <nav className="navbar navbar-expand-lg bg-primary navbar-dark d-flex align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-        <div className="container-fluid">
+  const token = localStorage.getItem("token");
+  const avatar = localStorage.getItem("avatar"); // Fetch avatar from localStorage
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const hideNav =
+    location.pathname === "/login" ||
+    location.pathname === "/signup";
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("avatar");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
+
+  return (
+    <nav className="navbar navbar-expand-lg bg-primary navbar-dark d-flex align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+      <div className="container-fluid">
+        {!hideNav && (
           <Link className="navbar-brand" to="/">
             E-commerce
           </Link>
-          <div className="col-md-3 text-end">
+        )}
+        <div className="col-md-3 text-end d-flex align-items-center justify-content-end gap-2">
+          {/* Show avatar if logged in and avatar exists */}
+          {token && avatar && avatar !== "" && (
+              <img
+              src={`http://localhost:3000/${avatar.replace(/\\/g, "/")}`}
+              alt="avatar"
+              style={{
+                width: 45,
+                height: 45,
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "3px solid white",
+                marginLeft: "10px"
+              }}
+            />
+          )}
+          {!token && location.pathname !== "/login" && (
             <Link className="btn btn-outline-dark me-2" to="/login">
               Login
             </Link>
+          )}
+          {!token && location.pathname !== "/signup" && (
             <Link className="btn btn-success" to="/signup">
               Sign-up
             </Link>
-          </div>
+          )}
+          {token && (
+            <button className="btn btn-danger" onClick={handleLogout}>
+              Logout
+            </button>
+          )}
         </div>
-      </nav>
-    );
-  };
-  
+      </div>
+    </nav>
+  );
+};
 
-export default NavBar
+export default NavBar;

@@ -10,6 +10,7 @@ import SignUpPage from "./pages/SignUpPage";
 //Components
 import NavBar from "./components/NavBar"
 import FooterComp from "./components/FooterComp"
+import PrivateRoute from "./components/PrivateRoute";
 
 
 const App = () => {
@@ -22,6 +23,7 @@ const App = () => {
           className="container d-flex flex-column justify-content-center align-items-center"
         >
           <Routes>
+            <Route path="/"element={<PrivateRoute><HomePage /></PrivateRoute>}/>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LogInPage />} />
             <Route path="/signup" element={<SignUpPage />} />

@@ -21,8 +21,14 @@ exports.userLogin = async (req, res) => {
             { expiresIn: "24h" }
         );
 
-        // ✅ FIX IS HERE!
-        res.status(200).json({ token });   // <--- this line changed!
+        
+        res.status(200).json({ 
+            token,
+            imageUrl: foundUser.imageUrl || null, // Send imageUrl or null if not set
+            firstName: foundUser.firstName,       // Optionally send name, etc.
+            role: foundUser.role
+        });
+        
     } catch (err) {
         res.status(401).json({
             message: err.message,
@@ -36,8 +42,10 @@ exports.userSignUp = async (req, res) => {
     const hashedPassword = req.hashedPassword;
 
     // Get the image URL from multer upload
-    const imageUrl = req.file ? req.file.path : null; // or wherever multer puts the file
-
+    const imageUrl = req.file
+    ? req.protocol + "://" + req.get("host") + "/" + req.file.path.replace(/\\/g, "/")
+    : null;
+  
     try {
         // Create a new user
         const newUser = new User({

@@ -3,11 +3,7 @@ const CardComponent = ({ title, description, price, imageUrl }) => {
     return (
       <article className="col">
         <div className="card shadow-sm">
-          <img
-            src={imageUrl}   // <-- Now dynamic!
-            className="card-img-top"
-            alt={title}
-          />
+        <img src={imageUrl} alt="Product" style={{ width: "100%", height: "auto" }} />
           <div className="card-body">
             <h5 className="card-title">{title}</h5>
             <p className="card-text">{description}</p>

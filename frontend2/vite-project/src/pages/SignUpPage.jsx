@@ -7,8 +7,8 @@ const fieldConfig = [
   { name: "lastName", label: "Last Name", type: "text", id: "lastNameInput" },
   { name: "email", label: "Email", type: "email", id: "emailInput" },
   { name: "password", label: "Password", type: "password", id: "passwordInput" },
-  { name: "role", label: "Role", type: "text", id: "roleInput" },
-  // Avatar/file input will be handled separately
+  // { name: "role", label: "Role", type: "text", id: "roleInput" }, // Remove this line
+  { name: "avatar", label: "Avatar", type: "file", id: "avatarInput" },
 ];
 
 const SignUpPage = () => {
@@ -18,33 +18,55 @@ const SignUpPage = () => {
     email: "",
     password: "",
     role: "",
+    avatar: null,
   });
-  const [avatar, setAvatar] = useState(null);
+  const [error, setError] = useState("");
 
-  // General handler for all text fields
+  // Handle form input changes
   const handleChange = (field) => (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: e.target.value,
-    }));
+    if (field === "avatar") {
+      setFormData((prev) => ({
+        ...prev,
+        avatar: e.target.files[0],
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
+    }
   };
 
-  // File handler for avatar
-  const handleFileChange = (e) => {
-    setAvatar(e.target.files[0]);
+  // Handle role select dropdown
+  const handleRoleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      role: e.target.value,
+    }));
   };
 
   // SUBMIT HANDLER
   const handleSubmit = async (event) => {
     event.preventDefault();
+    // Error checks
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+      setError("Please fill out all fields.");
+      return;
+    }
+    if (!formData.role) {
+      setError("Please select a role.");
+      return;
+    }
+    if (!formData.avatar) {
+      setError("Please select an avatar picture.");
+      return;
+    }
+    setError(""); // Clear error if all good
 
     const data = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
       data.append(key, value);
     });
-    if (avatar) {
-      data.append("avatar", avatar); // file field name must match Multer config
-    }
 
     try {
       const response = await fetch("http://localhost:3000/api/users/signup", {
@@ -54,12 +76,13 @@ const SignUpPage = () => {
       const result = await response.json();
       if (response.ok) {
         alert("User created!");
-        // redirect or clear form
+        // Redirect or clear form here
+        window.location.href = "/login"; // Optional: Redirect to login
       } else {
-        alert(result.message || "Sign-up failed.");
+        setError(result.message || "Sign-up failed.");
       }
     } catch (error) {
-      alert("Something went wrong.");
+      setError("Something went wrong.");
     }
   };
 
@@ -70,28 +93,55 @@ const SignUpPage = () => {
       onSubmit={handleSubmit}
     >
       <h1 className="text-center">Sign up</h1>
-      {fieldConfig.map(({ name, label, type, id }) => (
-        <div className="mb-3" key={name}>
-          <LabelComp htmlFor={id} displayText={label} />
-          <InputForm
-            id={id}
-            type={type}
-            value={formData[name]}
-            onChange={handleChange(name)}
-            aria-describedby={`${id}Help`}
-          />
-        </div>
-      ))}
-      <div className="mb-3" key="avatar">
-        <LabelComp htmlFor="avatarInput" displayText="Avatar" />
-        <input
-          id="avatarInput"
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
+      {fieldConfig.map(({ name, label, type, id }) => {
+        // Skip role here, handle separately
+        if (name === "avatar") {
+          return (
+            <div className="mb-3" key={name}>
+              <LabelComp htmlFor={id} displayText={label} />
+              <InputForm
+                id={id}
+                type={type}
+                onChange={handleChange(name)}
+                accept="image/*"
+              />
+            </div>
+          );
+        }
+        if (name === "role") return null;
+        return (
+          <div className="mb-3" key={name}>
+            <LabelComp htmlFor={id} displayText={label} />
+            <InputForm
+              id={id}
+              type={type}
+              value={formData[name]}
+              onChange={handleChange(name)}
+              aria-describedby={`${id}Help`}
+            />
+          </div>
+        );
+      })}
+
+      {/* Role dropdown */}
+      <div className="mb-3">
+        <LabelComp htmlFor="roleInput" displayText="Role" />
+        <select
+          id="roleInput"
           className="form-control"
-        />
+          value={formData.role}
+          onChange={handleRoleChange}
+        >
+          <option value="">Select role</option>
+          <option value="admin">Admin</option>
+          <option value="user">User</option>
+        </select>
       </div>
+
+      {error && (
+        <div className="alert alert-danger mb-2">{error}</div>
+      )}
+
       <button type="submit" className="btn btn-primary w-100">
         Sign up
       </button>

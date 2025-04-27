@@ -12,22 +12,26 @@ exports.getProduct = async (req, res) => {
 };
 
 exports.addProduct = async (req, res) => {
-    const { productName, productDescription, brand, imageUrl, model, stock, price } = req.body
+    const { productName, productDescription, brand, model, stock, price } = req.body;
+    // Build full URL if file exists:
+    const imageUrl = req.file
+      ? req.protocol + "://" + req.get("host") + "/" + req.file.path.replace(/\\/g, "/")
+      : null;
     try {
-    const newProduct = new Product({
-        productName,
-        productDescription,
-        brand,
-        imageUrl,
-        model,
-        stock,
-        price
-    })
-    const savedProduct = await newProduct.save()
-    res.status(201).json(savedProduct)
-} catch (err) {
-    res.status(400).json({
-        message: err.message
-    })
-}
-}
+        const newProduct = new Product({
+            productName,
+            productDescription,
+            brand,
+            model,
+            stock,
+            price,
+            imageUrl, // now a full URL!
+        });
+        const savedProduct = await newProduct.save();
+        res.status(201).json(savedProduct);
+    } catch (err) {
+        res.status(400).json({
+            message: err.message,
+        });
+    }
+};

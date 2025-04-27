@@ -1,23 +1,37 @@
 const express = require("express");
 const router = express.Router();
 const { getProduct, addProduct } = require("../controllers/productControllers");
-const { verifyAdmin } = require("../middleware/auth"); // Import the new middleware
+const { verifyAdmin, verifyToken } = require("../middleware/auth");
 const upload = require("../middleware/multerConfig");
-const sharpMiddleware = require("../middleware/sharpMiddleware");
 
+// Get products
 router.get('/seeProduct', getProduct);
 
-router.post('/addProduct', verifyAdmin, upload.single("image"), sharpMiddleware(), addProduct, (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: "Error uploading the file. Wrong format?" });
+// Add product (admin only)
+router.post(
+  '/addProduct',
+  verifyAdmin, // Change to verifyToken if you want regular users to add products
+  upload.single("image"),
+  addProduct
+);
+
+// ✅ NEW: Delete product (admin only)
+router.delete(
+  '/deleteProduct/:id',
+  verifyAdmin,
+  async (req, res) => {
+    try {
+      // Import your Product model here or at the top
+      const Product = require("../models/productModels");
+      const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+      if (!deletedProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      res.json({ message: "Product deleted" });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
-
-    console.log(req.body); // Logs the form fields
-    console.log(req.file); // Logs the uploaded file details
-    console.log(req.userId); // From the verifyAdmin middleware
-
-    const fileUrl = req.protocol + "://" + req.get("host") + "/" + req.file.processedPath;
-    res.json({ message: "User response reached", fileUrl });
-});
+  }
+);
 
 module.exports = router;
