@@ -7,7 +7,7 @@ const upload = require("../middleware/multerConfig")
 const sharpMiddleware = require("../middleware/sharpMiddleware")
 
 router.post("/login", userLogin)
-router.post("/signup", hashPassword, userSignUp)
+router.post("/signup", upload.single("avatar"), hashPassword, userSignUp)
 
 router.post("/test", verifyToken, (req,res)=>{
     console.log(req.userId);

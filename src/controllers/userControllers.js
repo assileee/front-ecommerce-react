@@ -21,7 +21,8 @@ exports.userLogin = async (req, res) => {
             { expiresIn: "24h" }
         );
 
-        res.status(200).json(token);
+        // ✅ FIX IS HERE!
+        res.status(200).json({ token });   // <--- this line changed!
     } catch (err) {
         res.status(401).json({
             message: err.message,
@@ -30,33 +31,36 @@ exports.userLogin = async (req, res) => {
 };
 
 exports.userSignUp = async (req, res) => {
-    // Get the data from the request
-    const { firstName, email, lastName, imageUrl, role } = req.body
-    const hashedPassword = req.hashedPassword
-        try {
-            // Create a new user
-            const newUser = new User({
-                firstName,
-                lastName,
-                email,
-                password: hashedPassword,
-                imageUrl,
-                role,
-                inventory: [],
-            });
-    
-            // Save the user to the database
-            const savedUser = await newUser.save();
-            res.status(201).json({
-                firstName: savedUser.firstName,
-                email: savedUser.email,
-                role: savedUser.role,
-            });
-        } catch (err) {
-            // catch any errors
-            res.status(400).json({
-                message: err.message,
-            });
-        }
-    };
-    
+    // Get the data from the request body (don't get imageUrl here!)
+    const { firstName, email, lastName, role } = req.body;
+    const hashedPassword = req.hashedPassword;
+
+    // Get the image URL from multer upload
+    const imageUrl = req.file ? req.file.path : null; // or wherever multer puts the file
+
+    try {
+        // Create a new user
+        const newUser = new User({
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword,
+            imageUrl,   // path to uploaded image
+            role,
+            inventory: [],
+        });
+
+        // Save the user to the database
+        const savedUser = await newUser.save();
+        res.status(201).json({
+            firstName: savedUser.firstName,
+            email: savedUser.email,
+            role: savedUser.role,
+        });
+    } catch (err) {
+        // catch any errors
+        res.status(400).json({
+            message: err.message,
+        });
+    }
+};
