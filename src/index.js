@@ -50,7 +50,7 @@ app.get("/", (req, res) => {
    })
 
 // image folder
-app.use("/uploads", express.static(path.join(__dirname, "uploads")))
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

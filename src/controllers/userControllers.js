@@ -37,28 +37,23 @@ exports.userLogin = async (req, res) => {
 };
 
 exports.userSignUp = async (req, res) => {
-    // Get the data from the request body (don't get imageUrl here!)
     const { firstName, email, lastName, role } = req.body;
     const hashedPassword = req.hashedPassword;
 
-    // Get the image URL from multer upload
-    const imageUrl = req.file
-    ? req.protocol + "://" + req.get("host") + "/" + req.file.path.replace(/\\/g, "/")
-    : null;
+    // Only save the RELATIVE PATH (no protocol/domain)
+    const imageUrl = req.file ? req.file.path.replace(/\\/g, "/") : null;
   
     try {
-        // Create a new user
         const newUser = new User({
             firstName,
             lastName,
             email,
             password: hashedPassword,
-            imageUrl,   // path to uploaded image
+            imageUrl,
             role,
             inventory: [],
         });
 
-        // Save the user to the database
         const savedUser = await newUser.save();
         res.status(201).json({
             firstName: savedUser.firstName,
@@ -66,7 +61,6 @@ exports.userSignUp = async (req, res) => {
             role: savedUser.role,
         });
     } catch (err) {
-        // catch any errors
         res.status(400).json({
             message: err.message,
         });

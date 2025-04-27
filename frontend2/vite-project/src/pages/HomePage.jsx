@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react"
 import { fetchProducts } from "../utils/fetchProducts.js"
 import CardComponent from "../components/CardComponent.jsx"
+import { useNavigate } from "react-router-dom"
 
 const HomePage = () => {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({
+
+  // Edit state
+  const [editId, setEditId] = useState(null)
+  const [editForm, setEditForm] = useState({
     productName: "",
     productDescription: "",
     brand: "",
@@ -15,10 +18,11 @@ const HomePage = () => {
     stock: "",
     price: "",
     image: null,
+    imageUrl: "",
   })
 
-  // Check admin status
   const isAdmin = localStorage.getItem("role") === "admin"
+  const navigate = useNavigate()
 
   useEffect(() => {
     loadProducts()
@@ -38,35 +42,50 @@ const HomePage = () => {
     }
   }
 
-  // Handle form changes
-  const handleChange = (e) => {
+  // Handle edit form changes
+  const handleEditFormChange = (e) => {
     const { name, value, files } = e.target
-    setForm((prev) => ({
+    setEditForm((prev) => ({
       ...prev,
       [name]: files ? files[0] : value,
     }))
   }
 
-  // Handle add product submit
-  const handleProductSubmit = async (e) => {
+  // Open edit form with product info
+  const handleEditClick = (product) => {
+    setEditId(product._id)
+    setEditForm({
+      productName: product.productName || "",
+      productDescription: product.productDescription || "",
+      brand: product.brand || "",
+      model: product.model || "",
+      stock: product.stock || "",
+      price: product.price || "",
+      image: null,
+      imageUrl: product.imageUrl || "",
+    })
+  }
+
+  // Submit updated product
+  const handleEditSubmit = async (e) => {
     e.preventDefault()
     const data = new FormData()
-    Object.entries(form).forEach(([key, value]) => {
+    Object.entries(editForm).forEach(([key, value]) => {
       if (key === "image" && value) data.append("image", value)
-      else data.append(key, value)
+      else if (key !== "imageUrl") data.append(key, value)
     })
     const token = localStorage.getItem("token")
     try {
-      const response = await fetch("http://localhost:3000/api/products/addProduct", {
-        method: "POST",
+      const response = await fetch(`http://localhost:3000/api/products/updateProduct/${editId}`, {
+        method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
         body: data,
       })
       const result = await response.json()
       if (response.ok) {
-        alert("Product added!")
-        setShowForm(false)
-        setForm({
+        alert("Product updated!")
+        setEditId(null)
+        setEditForm({
           productName: "",
           productDescription: "",
           brand: "",
@@ -74,10 +93,11 @@ const HomePage = () => {
           stock: "",
           price: "",
           image: null,
+          imageUrl: "",
         })
         loadProducts()
       } else {
-        alert(result.message || "Failed to add product")
+        alert(result.message || "Failed to update product")
       }
     } catch (err) {
       alert(err.message || "Network error")
@@ -114,20 +134,117 @@ const HomePage = () => {
       <section className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
         {products.map((product) => (
           <div key={product._id || product.id} className="col">
-            <CardComponent
-              title={product.productName}
-              description={product.productDescription}
-              price={product.price}
-              imageUrl={product.imageUrl || "https://placehold.co/300x200"}
-            />
-            {/* Delete Button (Admins only) */}
-            {isAdmin && (
-              <button
-                className="btn btn-danger mt-2"
-                onClick={() => handleDelete(product._id)}
-              >
-                Delete
-              </button>
+            {editId === product._id ? (
+              // Edit product form for THIS product
+              <form onSubmit={handleEditSubmit} className="card p-3 mb-4">
+                <h5>Edit Product</h5>
+                {/* Image preview */}
+                {editForm.image
+                  ? (
+                    <img
+                      src={URL.createObjectURL(editForm.image)}
+                      alt="Preview"
+                      style={{ width: "100%", marginBottom: 10, maxHeight: 180, objectFit: "cover" }}
+                    />
+                  )
+                  : editForm.imageUrl
+                  ? (
+                    <img
+                      src={editForm.imageUrl}
+                      alt="Current"
+                      style={{ width: "100%", marginBottom: 10, maxHeight: 180, objectFit: "cover" }}
+                    />
+                  )
+                  : null
+                }
+                <input
+                  name="productName"
+                  className="form-control mb-2"
+                  placeholder="Name"
+                  value={editForm.productName}
+                  onChange={handleEditFormChange}
+                  required
+                />
+                <input
+                  name="brand"
+                  className="form-control mb-2"
+                  placeholder="Brand"
+                  value={editForm.brand}
+                  onChange={handleEditFormChange}
+                  required
+                />
+                <input
+                  name="model"
+                  className="form-control mb-2"
+                  placeholder="Model"
+                  value={editForm.model}
+                  onChange={handleEditFormChange}
+                />
+                <input
+                  name="stock"
+                  type="number"
+                  className="form-control mb-2"
+                  placeholder="Stock"
+                  value={editForm.stock}
+                  onChange={handleEditFormChange}
+                  required
+                />
+                <input
+                  name="price"
+                  type="number"
+                  className="form-control mb-2"
+                  placeholder="Price"
+                  value={editForm.price}
+                  onChange={handleEditFormChange}
+                  required
+                />
+                <textarea
+                  name="productDescription"
+                  className="form-control mb-2"
+                  placeholder="Description"
+                  value={editForm.productDescription}
+                  onChange={handleEditFormChange}
+                />
+                <input
+                  name="image"
+                  type="file"
+                  className="form-control mb-2"
+                  onChange={handleEditFormChange}
+                  accept="image/*"
+                />
+                <button type="submit" className="btn btn-primary me-2">
+                  Save
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => setEditId(null)}>
+                  Cancel
+                </button>
+              </form>
+            ) : (
+              <>
+                <CardComponent
+                  product={product}
+                  title={product.productName}
+                  description={product.productDescription}
+                  price={product.price}
+                  imageUrl={product.imageUrl || "https://placehold.co/300x200"}
+                />
+                {isAdmin && (
+                  <>
+                    <button
+                      className="btn btn-danger mt-2 me-2"
+                      onClick={() => handleDelete(product._id)}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      className="btn btn-warning mt-2"
+                      onClick={() => handleEditClick(product)}
+                    >
+                      Edit
+                    </button>
+                  </>
+                )}
+              </>
             )}
           </div>
         ))}
@@ -136,75 +253,10 @@ const HomePage = () => {
       {/* Add Product Button (Admins only) */}
       {isAdmin && (
         <div className="mb-3 mt-4 text-center">
-          <button className="btn btn-success" onClick={() => setShowForm(!showForm)}>
-            {showForm ? "Cancel" : "+ Add Product"}
+          <button className="btn btn-success" onClick={() => navigate("/add-product")}>
+            + Add Product
           </button>
         </div>
-      )}
-
-      {/* Add Product Form (Admins only) */}
-      {isAdmin && showForm && (
-        <form onSubmit={handleProductSubmit} className="card p-3 mb-4" style={{ maxWidth: 500, margin: "0 auto" }}>
-          <h5>Add New Product</h5>
-          <input
-            name="productName"
-            className="form-control mb-2"
-            placeholder="Name"
-            value={form.productName}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="brand"
-            className="form-control mb-2"
-            placeholder="Brand"
-            value={form.brand}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="model"
-            className="form-control mb-2"
-            placeholder="Model"
-            value={form.model}
-            onChange={handleChange}
-          />
-          <input
-            name="stock"
-            type="number"
-            className="form-control mb-2"
-            placeholder="Stock"
-            value={form.stock}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="price"
-            type="number"
-            className="form-control mb-2"
-            placeholder="Price"
-            value={form.price}
-            onChange={handleChange}
-            required
-          />
-          <textarea
-            name="productDescription"
-            className="form-control mb-2"
-            placeholder="Description"
-            value={form.productDescription}
-            onChange={handleChange}
-          />
-          <input
-            name="image"
-            type="file"
-            className="form-control mb-2"
-            onChange={handleChange}
-            accept="image/*"
-          />
-          <button type="submit" className="btn btn-primary">
-            Add Product
-          </button>
-        </form>
       )}
     </>
   )
