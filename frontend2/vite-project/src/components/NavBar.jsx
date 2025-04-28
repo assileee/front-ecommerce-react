@@ -58,12 +58,7 @@ const NavBar = () => {
           {token && (
             <Link to="/cart" className="btn btn-light position-relative me-2" title="View Cart">
               <i className="bi bi-cart3" style={{ fontSize: 28 }}></i>
-              {cartQuantity > 0 && (
-                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                  {cartQuantity}
-                  <span className="visually-hidden">cart items</span>
-                </span>
-              )}
+              
             </Link>
           )}
 
