@@ -5,18 +5,31 @@ const CardComponent = ({ product, title, description, price, imageUrl }) => {
   const navigate = useNavigate();
 
   // Add to cart handler
-  const handleAddToCart = () => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    // Check if already in cart
-    const found = cart.find(item => item._id === product._id);
-    if (found) {
-      found.quantity += 1;
-    } else {
-      cart.push({ ...product, quantity: 1 });
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You must be logged in to add to cart");
+      return;
     }
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert("Added to cart!");
+    try {
+      const res = await fetch("http://localhost:3000/api/cart/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: product._id,  // or whatever the ID field is
+          quantity: 1
+        })
+      });
+      if (!res.ok) throw new Error("Failed to add to cart");
+      alert("Added to cart!");
+    } catch (err) {
+      alert(err.message || "Error adding to cart");
+    }
   };
+  
 
   return (
     <article className="col">

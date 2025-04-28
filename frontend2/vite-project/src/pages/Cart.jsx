@@ -1,28 +1,77 @@
-// pages/Cart.jsx
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const Cart = () => {
-  const [cart, setCart] = useState(JSON.parse(localStorage.getItem("cart")) || []);
+  const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const updateCart = (newCart) => {
-    setCart(newCart);
-    localStorage.setItem("cart", JSON.stringify(newCart));
-  };
+  // Fetch cart from backend on mount
+  useEffect(() => {
+    const fetchCart = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await fetch("http://localhost:3000/api/cart", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error("Failed to load cart");
+        const data = await response.json();
+        setCart(data.items || []); // assuming your API returns { items: [...] }
+      } catch (err) {
+        setCart([]);
+      }
+      setLoading(false);
+    };
+    fetchCart();
+  }, []);
 
-  const handleQuantityChange = (index, newQuantity) => {
+  // Update quantity
+  const handleQuantityChange = async (productId, newQuantity) => {
     if (newQuantity < 1) return;
-    const newCart = [...cart];
-    newCart[index].quantity = Number(newQuantity);
-    updateCart(newCart);
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch("http://localhost:3000/api/cart/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId, quantity: Number(newQuantity) })
+      });
+      if (!response.ok) throw new Error("Failed to update quantity");
+      const data = await response.json();
+      setCart(data.items || []);
+    } catch (err) {
+      alert(err.message || "Error updating quantity.");
+    }
   };
+  
 
-  const handleRemove = (index) => {
-    const newCart = cart.filter((_, i) => i !== index);
-    updateCart(newCart);
+  // Remove from cart
+  const handleRemove = async (productId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch("http://localhost:3000/api/cart/remove", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ productId })
+      });
+      if (!response.ok) throw new Error("Failed to remove item");
+      const data = await response.json();
+      setCart(data.items || []);
+    } catch (err) {
+      alert(err.message || "Error removing item.");
+    }
   };
+  
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = cart && cart.length
+  ? cart.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0)
+  : 0;
+<td colSpan={2} className="fw-bold">${isNaN(total) ? 0 : total}</td>
+
+  if (loading) return <div className="container py-4"><p>Loading cart...</p></div>;
 
   return (
     <div className="container py-4">
@@ -45,7 +94,7 @@ const Cart = () => {
             </thead>
             <tbody>
               {cart.map((item, idx) => (
-                <tr key={idx}>
+                <tr key={item._id || idx}>
                   <td>{item.productName}</td>
                   <td>
                     <img src={item.imageUrl} alt={item.productName} style={{ width: 70, height: 50, objectFit: "cover" }} />
@@ -58,12 +107,12 @@ const Cart = () => {
                       min={1}
                       value={item.quantity}
                       style={{ width: 60 }}
-                      onChange={e => handleQuantityChange(idx, e.target.value)}
+                      onChange={e => handleQuantityChange(item.productId || item._id, e.target.value)}
                     />
                   </td>
                   <td>${item.price * item.quantity}</td>
                   <td>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleRemove(idx)}>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleRemove(item.productId || item._id)}>
                       Remove
                     </button>
                   </td>

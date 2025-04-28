@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const NavBar = () => {
@@ -6,8 +6,33 @@ const NavBar = () => {
   const avatar = localStorage.getItem("avatar");
   const location = useLocation();
   const navigate = useNavigate();
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  // --- NEW: Cart state from backend ---
+  const [cartQuantity, setCartQuantity] = useState(0);
+
+  useEffect(() => {
+    if (!token) {
+      setCartQuantity(0);
+      return;
+    }
+    // Fetch cart from backend
+    const fetchCart = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/cart", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        // Calculate total quantity
+        const total = (data.items || []).reduce((sum, item) => sum + item.quantity, 0);
+        setCartQuantity(total);
+      } catch (err) {
+        setCartQuantity(0);
+      }
+    };
+    fetchCart();
+  }, [token]);
+
+  // If you want the cart count to update after add-to-cart, consider using a Context/global state.
 
   const hideNav =
     location.pathname === "/login" ||

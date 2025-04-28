@@ -40,9 +40,29 @@ const ProductDetails = () => {
           {/* Add to Cart button */}
           <button
             className="btn btn-success mt-2"
-            onClick={() => {
-              // Your add-to-cart logic here (localStorage or context)
-              alert("Added to cart (implement your logic)");
+            onClick={async () => {
+              const token = localStorage.getItem("token");
+              if (!token) {
+                alert("You must be logged in to add to cart");
+                return;
+              }
+              try {
+                const res = await fetch("http://localhost:3000/api/cart/add", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    productId: product._id,
+                    quantity: 1,
+                  }),
+                });
+                if (!res.ok) throw new Error("Failed to add to cart");
+                alert("Added to cart!");
+              } catch (err) {
+                alert(err.message || "Error adding to cart");
+              }
             }}
           >
             Add to Cart
