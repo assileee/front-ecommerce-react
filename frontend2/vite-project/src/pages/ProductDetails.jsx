@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -9,8 +10,8 @@ const ProductDetails = () => {
 
   useEffect(() => {
     // Fetch single product
-    fetch(`http://localhost:3000/api/products/seeProduct/${id}`)
-      .then(res => res.json())
+    fetch(`${API_URL}/api/products/seeProduct/${id}`)
+    .then(res => res.json())
       .then(data => {
         setProduct(data);
         setLoading(false);
@@ -47,7 +48,7 @@ const ProductDetails = () => {
                 return;
               }
               try {
-                const res = await fetch("http://localhost:3000/api/cart/add", {
+                const res = await fetch(`${API_URL}/api/cart/add`, {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
