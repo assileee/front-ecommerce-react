@@ -13,7 +13,6 @@ import Cart from "./pages/Cart"; // (not CartPage)
 //Components
 import NavBar from "./components/NavBar"
 import FooterComp from "./components/FooterComp"
-import PrivateRoute from "./components/PrivateRoute";
 
 
 const App = () => {
@@ -26,14 +25,13 @@ const App = () => {
           className="container d-flex flex-column justify-content-center align-items-center"
         >
           <Routes>
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/"element={<PrivateRoute><HomePage /></PrivateRoute>}/>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LogInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/add-product" element={<CreateProduct />} />
-            <Route path="*" element={<NotFoundPage />} />
+            <Route path="/cart" element={<Cart />} />
             <Route path="/products/:id" element={<ProductDetails />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
         <FooterComp/>

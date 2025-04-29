@@ -24,6 +24,8 @@ const HomePage = () => {
   const isAdmin = localStorage.getItem("role") === "admin"
   const navigate = useNavigate()
 
+  console.log("isAdmin:", isAdmin);
+
   useEffect(() => {
     loadProducts()
     // eslint-disable-next-line

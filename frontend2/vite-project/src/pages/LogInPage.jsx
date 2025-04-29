@@ -19,6 +19,7 @@ const LogInPage = () => {
       if (!checkEmail.checkFormat(email)) throw Error("Email bad !!!");
 
       setError("");
+      console.log({ email, password });
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/login`, {
         method: "POST",
