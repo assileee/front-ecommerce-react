@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const CreateProduct = () => {
   const [form, setForm] = useState({
@@ -30,7 +31,7 @@ const CreateProduct = () => {
     });
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:3000/api/products/addProduct", {
+      const response = await fetch(`${API_URL}/api/products/addProduct`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: data,

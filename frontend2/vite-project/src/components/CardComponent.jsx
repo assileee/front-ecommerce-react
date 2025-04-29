@@ -12,7 +12,7 @@ const CardComponent = ({ product, title, description, price, imageUrl }) => {
       return;
     }
     try {
-      const res = await fetch("http://localhost:3000/api/cart/add", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Cart = () => {
   const [cart, setCart] = useState([]);
@@ -9,7 +10,7 @@ const Cart = () => {
     const fetchCart = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await fetch("http://localhost:3000/api/cart", {
+        const response = await fetch(`${API_URL}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!response.ok) throw new Error("Failed to load cart");
@@ -28,7 +29,7 @@ const Cart = () => {
     if (newQuantity < 1) return;
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:3000/api/cart/update", {
+      const response = await fetch(`${API_URL}/api/cart/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +50,7 @@ const Cart = () => {
   const handleRemove = async (productId) => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:3000/api/cart/remove", {
+      const response = await fetch(`${API_URL}/api/cart/remove`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

@@ -18,7 +18,7 @@ const NavBar = () => {
     // Fetch cart from backend
     const fetchCart = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/cart", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -65,7 +65,7 @@ const NavBar = () => {
           {/* Show avatar if logged in and avatar exists */}
           {token && avatar && avatar !== "" && (
             <img
-              src={`http://localhost:3000/${avatar.replace(/\\/g, "/")}`}
+              src={`${import.meta.env.VITE_API_URL}/${avatar.replace(/\\/g, "/")}`}
               alt="avatar"
               style={{
                 width: 45,

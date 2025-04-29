@@ -76,7 +76,7 @@ const HomePage = () => {
     })
     const token = localStorage.getItem("token")
     try {
-      const response = await fetch(`http://localhost:3000/api/products/updateProduct/${editId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/updateProduct/${editId}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
         body: data,
@@ -109,7 +109,7 @@ const HomePage = () => {
     const token = localStorage.getItem("token");
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      const response = await fetch(`http://localhost:3000/api/products/deleteProduct/${productId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/deleteProduct/${productId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
